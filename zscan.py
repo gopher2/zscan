@@ -3,8 +3,6 @@
 import sqlite3
 import configparser
 import sqlite3 as sl
-import sys
-import ipaddress
 import os
 import time
 
@@ -47,16 +45,27 @@ def update_host(conn, IP_Address, scan_id, port, network_id):
     host_id = cur.fetchone()[0]
     
     # ADD THE PORT TO THE SCAN RESULTS
-    sql = ''' INSERT INTO Ports(host_id, scan_id, number) VALUES(?,?,?) '''
+    sql = ''' INSERT INTO OpenPorts(host_id, scan_id, number) VALUES(?,?,?) '''
     cur = conn.cursor()
     values = (host_id, scan_id, port)
     cur.execute(sql, values)
     conn.commit()
 
 def get_enabled_networks(conn):
+    # GET LIST OF NETWORKS FLAGGED FOR SCANNING
     cur = conn.cursor()
-    cur.execute(''' SELECT network_id, cidr FROM Networks where Enabled = 1 ''')
+    cur.execute(''' SELECT network_id, cidr FROM Networks where enabled = 1 ''')
     return cur.fetchall()
+
+def get_enabled_ports(conn):
+    # GET LIST OF PORTS TO SCAN (MAKE NETWORK DEPENDANT?)
+    cur = conn.cursor()
+    cur.execute(''' SELECT port_number, port_description FROM PortList where scan_enabled = 1 ''')
+    return cur.fetchall()
+
+# def initalize_database:
+#     #WIPE OUT AND INITALIZE DATABASE WITH DEFAULT VALUES
+
 
 sqlite3.enable_callback_tracebacks(True)
 def main():
@@ -64,30 +73,25 @@ def main():
     config = configparser.ConfigParser()
     config.sections()
     config.read('zscan.cfg')   
-    #ports = [int(x) for x in config.get('zscan', 'ports').split(',')]
-    ports = config.get('zscan', 'ports').split(',')
-    networks = config.get('zscan', 'networks').split(',')
     zmap = config.get('zscan', 'zmaplocation')
     dbfile = config.get('zscan', 'dbfile')
     conn = create_connection(dbfile)
-
-
 
     with conn:
         networks = get_enabled_networks(conn)
         for network in networks:
             network_id, cidr = network
+            ports = get_enabled_ports(conn)
             for port in ports:
-                port = str(port)
-                print ("SCANNING NETWORK: " + cidr + " PORT: " + port)
-                command = zmap + " -v 0 -q -r 300 -p " + port + " " + cidr
+                port_number, port_name = port
+                command = zmap + " -v 0 -q -r 300 -p " + str(port_number) + " " + cidr
                 scan = (int(time.time()), command)
                 scan_id = create_scan(conn, scan)
                 with os.popen(command) as pipe:
                     for output in pipe:
                         IP_Address = output.rstrip()
-                        print ("HOST: " + IP_Address + " OPEN PORT: " + port)
-                        update_host(conn, IP_Address, scan_id, port, network_id)
+                        print ('HOST:{:16s}OPEN PORT:{:s}/{:d}'.format(IP_Address,port_name,port_number))
+                        update_host(conn, IP_Address, scan_id, port_number, network_id)
                 scan = (int(time.time()), scan_id)
                 end_scan(conn, scan)
 
