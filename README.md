@@ -19,5 +19,10 @@ cd zscan
 sudo python ./zscan.py
 ```
 
+You can wipe out the database and initalize with default values with the reset argument
+```bash
+python ./zscan.py reset
+```
+
 ## License
 [GPL3](https://www.gnu.org/licenses/gpl-3.0.txt)

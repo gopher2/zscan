@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 #IMPORT THE MODULES NECCESSARY TO RUN PROGRAM
+import sys
 import sqlite3
 import configparser
 import sqlite3 as sl
 import os
 import time
+import initalize 
 
 
 def create_connection(db_file):                        
@@ -63,12 +65,9 @@ def get_enabled_ports(conn):
     cur.execute(''' SELECT port_number, port_description FROM PortList where scan_enabled = 1 ''')
     return cur.fetchall()
 
-# def initalize_database:
-#     #WIPE OUT AND INITALIZE DATABASE WITH DEFAULT VALUES
-
-
 sqlite3.enable_callback_tracebacks(True)
 def main():
+    
     sqlite3.enable_callback_tracebacks(True)
     config = configparser.ConfigParser()
     config.sections()
@@ -84,7 +83,7 @@ def main():
             ports = get_enabled_ports(conn)
             for port in ports:
                 port_number, port_name = port
-                command = zmap + " -v 0 -q -r 300 -p " + str(port_number) + " " + cidr
+                command = zmap + " -c 1 -v 0 -q -r 300 -p " + str(port_number) + " " + cidr
                 scan = (int(time.time()), command)
                 scan_id = create_scan(conn, scan)
                 with os.popen(command) as pipe:
@@ -96,4 +95,7 @@ def main():
                 end_scan(conn, scan)
 
 if __name__ == '__main__':
+    if "reset" in sys.argv:
+        initalize.resetdb()
+        exit(0)
     main()
