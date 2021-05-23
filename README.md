@@ -1,6 +1,6 @@
 # ZSCAN
 
-Zscan is a python / sql wrapper around the zmap program to map your network and find and alert on new open services.
+zscan is a python / sql wrapper around the zmap program to map your network and find and alert on new open services.
 
 ## Installation
 
