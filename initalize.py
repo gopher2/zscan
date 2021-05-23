@@ -31,7 +31,7 @@ def resetdb():
                 "network_id"	INTEGER,
                 "last_scan_id"	INTEGER,
                 "IP_Address"	TEXT NOT NULL UNIQUE,
-                "name"	TEXT,
+                "hostname"	TEXT,
                 FOREIGN KEY("last_scan_id") REFERENCES "Scans"("scan_id"),
                 PRIMARY KEY("host_id" AUTOINCREMENT)
             )''')

@@ -7,6 +7,7 @@ import sqlite3 as sl
 import os
 import time
 import initalize 
+import socket
 
 
 def create_connection(db_file):                        
@@ -14,8 +15,9 @@ def create_connection(db_file):
     conn = None
     try:
         conn = sl.connect(db_file)
-    except configparser.Error as e:
+    except Error as e:
         print(e)
+        exit(0)
     return conn
 
 def create_scan(conn, values):                          
@@ -33,11 +35,11 @@ def end_scan(conn, values):
     cur.execute(sql, values)
     conn.commit()
 
-def update_host(conn, IP_Address, scan_id, port, network_id):       
+def update_host(conn, IP_Address, scan_id, port, network_id, hostname):       
     # IF OPEN PORT FOUND ADD HOST, UPDATE LAST SCAN TIME IF ALREADY SEEN
-    sql = ''' INSERT INTO Hosts(network_id, IP_Address,last_scan_id) VALUES(?,?,?) ON CONFLICT(IP_Address) DO UPDATE SET last_scan_id = ? '''
+    sql = ''' INSERT INTO Hosts(hostname, network_id, IP_Address,last_scan_id) VALUES(?,?,?,?) ON CONFLICT(IP_Address) DO UPDATE SET last_scan_id = ? '''
     cur = conn.cursor()
-    values = (network_id, IP_Address, scan_id, scan_id)
+    values = (hostname, network_id, IP_Address, scan_id, scan_id)
     cur.execute(sql, values)
     
     # GET THE CURRENT HOST ID
@@ -81,16 +83,21 @@ def main():
         for network in networks:
             network_id, cidr = network
             ports = get_enabled_ports(conn)
+            print ('{:16s}{:10s}{:50s}'.format("IP ADDRESS","SERVICE","HOSTNAME"))
             for port in ports:
                 port_number, port_name = port
-                command = zmap + " -c 1 -v 0 -q -r 300 -p " + str(port_number) + " " + cidr
+                command = '{:s} -c 5 -v 0 -q -p {:d} {:s}'.format(zmap, port_number, cidr)
                 scan = (int(time.time()), command)
                 scan_id = create_scan(conn, scan)
                 with os.popen(command) as pipe:
                     for output in pipe:
                         IP_Address = output.rstrip()
-                        print ('HOST:{:16s}OPEN PORT:{:s}/{:d}'.format(IP_Address,port_name,port_number))
-                        update_host(conn, IP_Address, scan_id, port_number, network_id)
+                        try:
+                            hostname = socket.gethostbyaddr(IP_Address)[0]
+                        except:
+                            hostname = " "
+                        print ('{:16s}{:10s}{:50s}'.format(IP_Address,port_name,hostname))
+                        update_host(conn, IP_Address, scan_id, port_number, network_id, hostname)
                 scan = (int(time.time()), scan_id)
                 end_scan(conn, scan)
 
