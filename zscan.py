@@ -14,7 +14,7 @@ def create_connection(db_file):
     conn = None
     try:
         conn = sl.connect(db_file)
-    except Error as e:
+    except configparser.Error as e:
         print(e)
     return conn
 
@@ -33,11 +33,11 @@ def end_scan(conn, values):
     cur.execute(sql, values)
     conn.commit()
 
-def update_host(conn, IP_Address, scan_id, port):       
+def update_host(conn, IP_Address, scan_id, port, network_id):       
     # IF OPEN PORT FOUND ADD HOST, UPDATE LAST SCAN TIME IF ALREADY SEEN
-    sql = ''' INSERT INTO Hosts(IP_Address,last_scan_id) VALUES(?,?) ON CONFLICT(IP_Address) DO UPDATE SET last_scan_id = ? '''
+    sql = ''' INSERT INTO Hosts(network_id, IP_Address,last_scan_id) VALUES(?,?,?) ON CONFLICT(IP_Address) DO UPDATE SET last_scan_id = ? '''
     cur = conn.cursor()
-    values = (IP_Address, scan_id, scan_id)
+    values = (network_id, IP_Address, scan_id, scan_id)
     cur.execute(sql, values)
     
     # GET THE CURRENT HOST ID
@@ -52,37 +52,44 @@ def update_host(conn, IP_Address, scan_id, port):
     values = (host_id, scan_id, port)
     cur.execute(sql, values)
     conn.commit()
-    
+
+def get_enabled_networks(conn):
+    cur = conn.cursor()
+    cur.execute(''' SELECT network_id, cidr FROM Networks where Enabled = 1 ''')
+    return cur.fetchall()
+
 sqlite3.enable_callback_tracebacks(True)
 def main():
     sqlite3.enable_callback_tracebacks(True)
     config = configparser.ConfigParser()
     config.sections()
     config.read('zscan.cfg')   
-    ports = [int(x) for x in config.get('zscan', 'ports').split(',')]
+    #ports = [int(x) for x in config.get('zscan', 'ports').split(',')]
+    ports = config.get('zscan', 'ports').split(',')
     networks = config.get('zscan', 'networks').split(',')
     zmap = config.get('zscan', 'zmaplocation')
     dbfile = config.get('zscan', 'dbfile')
     conn = create_connection(dbfile)
 
+
+
     with conn:
+        networks = get_enabled_networks(conn)
         for network in networks:
+            network_id, cidr = network
             for port in ports:
-                print ("SCANNING NETWORK: " + str(network) + " PORT: " + str(port))
-                command = zmap + " -v 0 -q -r 300 -p " + str(port).rstrip() + " " + network
+                port = str(port)
+                print ("SCANNING NETWORK: " + cidr + " PORT: " + port)
+                command = zmap + " -v 0 -q -r 300 -p " + port + " " + cidr
                 scan = (int(time.time()), command)
                 scan_id = create_scan(conn, scan)
                 with os.popen(command) as pipe:
                     for output in pipe:
                         IP_Address = output.rstrip()
-                        print ("HOST: " + IP_Address + " OPEN PORT: " + str(port))
-                        update_host(conn, IP_Address, scan_id, port)
+                        print ("HOST: " + IP_Address + " OPEN PORT: " + port)
+                        update_host(conn, IP_Address, scan_id, port, network_id)
                 scan = (int(time.time()), scan_id)
                 end_scan(conn, scan)
 
 if __name__ == '__main__':
     main()
-
-
-
-
