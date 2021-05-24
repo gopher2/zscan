@@ -15,7 +15,7 @@ def create_connection(db_file):
     conn = None
     try:
         conn = sl.connect(db_file)
-    except Error as e:
+    except sl.Error as e:
         print(e)
         exit(0)
     return conn
