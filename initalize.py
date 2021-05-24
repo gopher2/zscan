@@ -53,11 +53,18 @@ def resetdb():
                 PRIMARY KEY("network_id" AUTOINCREMENT)
             )''')
     
-    c.execute('''CREATE TABLE "PortList" (
+    c.execute('''CREATE TABLE "Port" (
                 "port_number"	    INTEGER NOT NULL UNIQUE,
                 "port_description"	TEXT,
                 "scan_enabled"	    INTEGER,
                 PRIMARY KEY("port_number")
+            )''')
+    
+    c.execute('''CREATE TABLE "NetworkPorts" (
+                "network_id"	            INTEGER,
+                "port_id"	                INTEGER,
+                FOREIGN KEY("port_id")      REFERENCES "Port"("port_number"),
+                FOREIGN KEY("network_id")   REFERENCES "Networks"("network_id")
             )''')
 
     networks = [("192.168.88.0/24", 1, "Mikrotik Default" ),
@@ -87,6 +94,6 @@ def resetdb():
                 (5900,1,"vnc"),
                 (8080,1,"http-proxy")]
 
-    c.executemany('INSERT INTO PortList (port_number, scan_enabled, port_description) VALUES(?,?,?)', ports)
+    c.executemany('INSERT INTO Port (port_number, scan_enabled, port_description) VALUES(?,?,?)', ports)
     conn.commit()
     conn.close()
