@@ -64,7 +64,7 @@ def get_enabled_networks(conn):
 def get_enabled_ports(conn):
     # GET LIST OF PORTS TO SCAN (MAKE NETWORK DEPENDANT?)
     cur = conn.cursor()
-    cur.execute(''' SELECT port_number, port_description FROM PortList where scan_enabled = 1 ''')
+    cur.execute(''' SELECT port_number, port_description FROM Port where scan_enabled = 1 ''')
     return cur.fetchall()
 
 sqlite3.enable_callback_tracebacks(True)
