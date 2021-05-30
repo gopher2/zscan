@@ -61,10 +61,17 @@ def get_enabled_networks(conn):
     cur.execute(''' SELECT network_id, cidr FROM Networks where enabled = 1 ''')
     return cur.fetchall()
 
-def get_enabled_ports(conn):
+def get_enabled_ports(conn, network_id):
     # GET LIST OF PORTS TO SCAN (MAKE NETWORK DEPENDANT?)
     cur = conn.cursor()
-    cur.execute(''' SELECT port_number, port_description FROM Port where scan_enabled = 1 ''')
+    sql = ''' SELECT 
+	                    port_number, port_description 
+                    FROM 
+	                    NetworkPorts
+	                INNER JOIN Port ON  NetworkPorts.port_id = Port.port_number
+                    WHERE
+	                    NetworkPorts.network_id = ? '''
+    cur.execute(sql, (network_id,))
     return cur.fetchall()
 
 sqlite3.enable_callback_tracebacks(True)
@@ -82,7 +89,7 @@ def main():
         networks = get_enabled_networks(conn)
         for network in networks:
             network_id, cidr = network
-            ports = get_enabled_ports(conn)
+            ports = get_enabled_ports(conn, network_id)
             print ('{:16s}{:10s}{:50s}'.format("IP ADDRESS","SERVICE","HOSTNAME"))
             for port in ports:
                 port_number, port_name = port
