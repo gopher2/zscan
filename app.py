@@ -14,7 +14,25 @@ def all_host_listing():
         host_data = query_all_host_data()
         return render_template('hosts.html', host_data=host_data)
 
+@app.route('/networks')
+def network_listing():
+        network_data = query_networks()
+        return render_template('networks.html', network_data=network_data)
 
+def query_networks():
+    conn = sqlite3.connect("zscan.db")
+    conn.row_factory = sqlite3.Row
+    sql = '''   SELECT
+                    cidr as network,
+                    description,
+                    enabled
+                FROM
+                    Networks
+                '''   
+    c = conn.cursor()
+    c.execute(sql)
+    rows = c.fetchall()
+    return rows
 
 def query_single_host_data(host_id):
     conn = sqlite3.connect("zscan.db")
