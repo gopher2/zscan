@@ -3,26 +3,51 @@ import sqlite3
 
 app = Flask(__name__)
 
-@app.route('/hosts/<host_id>')
-def host_listing(host_id):
-        host_data = query_single_host_data(host_id)
-        return render_template('hostdetail.html', host_data=host_data)
-
-
 @app.route('/hosts')
 def all_host_listing():
         host_data = query_all_host_data()
         return render_template('hosts.html', host_data=host_data)
 
+@app.route('/hosts/<host_id>')
+def host_listing(host_id):
+        host_data = query_single_host_data(host_id)
+        return render_template('hostdetail.html', host_data=host_data)
+
 @app.route('/networks')
 def network_listing():
-        network_data = query_networks()
+        network_data = query_all_networks()
         return render_template('networks.html', network_data=network_data)
 
-def query_networks():
+@app.route('/networks/<network_id>')
+def network_detail(network_id):
+        network_data = query_network(network_id)
+        return render_template('networkdetail.html', network_data=network_data)
+
+
+
+def query_network(network_id):
+    conn = sqlite3.connect("zscan.db")
+    conn.row_factory = sqlite3.Row
+    sql = '''   SELECT 
+                    port_number,
+                    CASE 
+                        WHEN EXISTS (SELECT * from NetworkPorts where network_id = ? and port_id = port_number)
+                        THEN 'TRUE'
+                        ELSE 'FLASE'
+                    END enabled
+                FROM	
+                    Port '''
+
+    c = conn.cursor()
+    c.execute(sql, (network_id,))
+    rows = c.fetchall()
+    return rows
+
+def query_all_networks():
     conn = sqlite3.connect("zscan.db")
     conn.row_factory = sqlite3.Row
     sql = '''   SELECT
+                    network_id,
                     cidr as network,
                     description,
                     enabled

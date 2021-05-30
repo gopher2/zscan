@@ -3,17 +3,13 @@
   <body>
       <table>
         <thead>
-          <td>Network</td>
-          <td>Description</td>
+          <td>Port</td>
           <td>Scan Enabled</td>
-          <td>Port Enabled</td>
         </thead>
         {% for row in network_data %}
         <tr> 
-          <td><a href="/networks/{{row['network_id']}}">{{row["network"]}}</a></td>
-          <td>{{row["description"]}}</td>
+          <td>{{row["port_number"]}}</td>
           <td>{{row["enabled"]}}</td>
-          <td>EDIT</td>	
         </tr>
         {% endfor %}
       </table>

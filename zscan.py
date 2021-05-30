@@ -30,10 +30,10 @@ def create_scan(conn, values):
 
 def end_scan(conn, values):                             
     # MARK THE ENDING TIMESTAMP OF A NETWORK SCAN
-    sql = '''   UDATE 
+    sql = '''   UPDATE 
                     Scans 
                 SET 
-                    endtime  = ?
+                    endtime = ?
                 WHERE 
                     scan_id = ? '''
 
@@ -73,7 +73,7 @@ def update_host(conn, IP_Address, scan_id, port, network_id, hostname):
                     OpenPorts(host_id, scan_id, number) 
                 VALUES
                     (?,?,?) '''
-                    
+
     cur = conn.cursor()
     values = (host_id, scan_id, port)
     cur.execute(sql, values)
