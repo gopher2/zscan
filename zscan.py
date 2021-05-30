@@ -30,26 +30,50 @@ def create_scan(conn, values):
 
 def end_scan(conn, values):                             
     # MARK THE ENDING TIMESTAMP OF A NETWORK SCAN
-    sql = ''' Update Scans SET endtime  = ? WHERE scan_id = ? '''
+    sql = '''   UDATE 
+                    Scans 
+                SET 
+                    endtime  = ?
+                WHERE 
+                    scan_id = ? '''
+
     cur = conn.cursor()
     cur.execute(sql, values)
     conn.commit()
 
 def update_host(conn, IP_Address, scan_id, port, network_id, hostname):       
     # IF OPEN PORT FOUND ADD HOST, UPDATE LAST SCAN TIME IF ALREADY SEEN
-    sql = ''' INSERT INTO Hosts(hostname, network_id, IP_Address,last_scan_id) VALUES(?,?,?,?) ON CONFLICT(IP_Address) DO UPDATE SET last_scan_id = ? '''
+    sql = '''   INSERT INTO 
+                    Hosts(hostname, network_id, IP_Address,last_scan_id) 
+                VALUES
+                    (?,?,?,?) 
+                ON CONFLICT
+                    (IP_Address)
+                DO UPDATE SET 
+                    last_scan_id = ? '''
+
     cur = conn.cursor()
     values = (hostname, network_id, IP_Address, scan_id, scan_id)
     cur.execute(sql, values)
     
     # GET THE CURRENT HOST ID
     cur = conn.cursor()
-    sql = ''' SELECT host_id FROM Hosts where IP_Address = ? '''
+    sql = '''   SELECT 
+                    host_id
+                FROM 
+                    Hosts 
+                WHERE
+                    IP_Address = ? '''
+
     cur.execute(sql, (IP_Address,))
     host_id = cur.fetchone()[0]
     
     # ADD THE PORT TO THE SCAN RESULTS
-    sql = ''' INSERT INTO OpenPorts(host_id, scan_id, number) VALUES(?,?,?) '''
+    sql = '''   INSERT INTO 
+                    OpenPorts(host_id, scan_id, number) 
+                VALUES
+                    (?,?,?) '''
+                    
     cur = conn.cursor()
     values = (host_id, scan_id, port)
     cur.execute(sql, values)
@@ -58,19 +82,25 @@ def update_host(conn, IP_Address, scan_id, port, network_id, hostname):
 def get_enabled_networks(conn):
     # GET LIST OF NETWORKS FLAGGED FOR SCANNING
     cur = conn.cursor()
-    cur.execute(''' SELECT network_id, cidr FROM Networks where enabled = 1 ''')
+    cur.execute(''' SELECT 
+                        network_id, cidr 
+                    FROM 
+                        Networks 
+                    WHERE 
+                        enabled = 1 ''')
     return cur.fetchall()
 
 def get_enabled_ports(conn, network_id):
     # GET LIST OF PORTS TO SCAN (MAKE NETWORK DEPENDANT?)
     cur = conn.cursor()
-    sql = ''' SELECT 
-	                    port_number, port_description 
-                    FROM 
-	                    NetworkPorts
-	                INNER JOIN Port ON  NetworkPorts.port_id = Port.port_number
-                    WHERE
-	                    NetworkPorts.network_id = ? '''
+    sql = '''   SELECT 
+	                port_number, port_description 
+                FROM 
+	                NetworkPorts
+	            INNER JOIN 
+                    Port ON  NetworkPorts.port_id = Port.port_number
+                WHERE
+	                NetworkPorts.network_id = ? '''
     cur.execute(sql, (network_id,))
     return cur.fetchall()
 
