@@ -73,27 +73,40 @@ def resetdb():
     
     c.executemany('INSERT INTO Networks (cidr, enabled, description) VALUES(?,?,?)', networks)
 
-    ports = [   (21,  1,"ftp"),
-                (22,  1,"ssh"),
-                (23,  1,"telnet"),
-                (25,  1,"smtp"),
-                (53,  1,"domain"),
+    ports = [   (21,  0,"ftp"),
+                (22,  0,"ssh"),
+                (23,  0,"telnet"),
+                (25,  0,"smtp"),
+                (53,  0,"domain"),
                 (80,  1,"http"),
-                (110, 1,"pop3"),
-                (111, 1,"rpcbind"),
-                (135, 1,"msrpc"),
-                (139, 1,"netbios-ssn"),
-                (143, 1,"imap"),
+                (110, 0,"pop3"),
+                (111, 0,"rpcbind"),
+                (135, 0,"msrpc"),
+                (139, 0,"netbios-ssn"),
+                (143, 0,"imap"),
                 (443, 1,"https"),
-                (445, 1,"microsoft-ds"),
-                (993, 1,"imaps"),
-                (995, 1,"pop3s"),
-                (1723,1,"pptp"),
-                (3306,1,"mysql"),
-                (3389,1,"ms-wbt-server"),
-                (5900,1,"vnc"),
-                (8080,1,"http-proxy")]
+                (445, 0,"microsoft-ds"),
+                (993, 0,"imaps"),
+                (995, 0,"pop3s"),
+                (1723,0,"pptp"),
+                (3306,0,"mysql"),
+                (3389,0,"ms-wbt-server"),
+                (5900,0,"vnc"),
+                (8080,0,"http-proxy")]
 
     c.executemany('INSERT INTO Port (port_number, scan_enabled, port_description) VALUES(?,?,?)', ports)
+    conn.commit()
+    
+    ### Poupulate the networks port to scan from the global list
+    c.execute('''   INSERT INTO NetworkPorts (network_id, port_id) 
+                        SELECT
+						    Networks.network_id, 
+						    Port.port_number
+					    FROM
+						    Networks
+						    CROSS JOIN Port
+                        WHERE
+    						Networks.enabled = 1
+	    					AND Port.scan_enabled = 1 ''')
     conn.commit()
     conn.close()
