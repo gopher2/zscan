@@ -6,7 +6,15 @@ app = Flask(__name__)
 @app.route("/")
 def view_home():
     return render_template("base.html")
-    
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template("404.html")
+
+@app.errorhandler(504)
+def page_not_found(e):
+    return render_template("500.html")
+
 @app.route('/hosts')
 def all_host_listing():
         host_data = query_all_host_data()
