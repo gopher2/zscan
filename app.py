@@ -10,7 +10,7 @@ def view_home():
 @app.route('/hosts')
 def all_host_listing():
         host_data = query_all_host_data()
-        return render_template('hosts.html', host_data=host_data)
+        return render_template('hosts.html', title="Zscan Home", host_data=host_data)
 
 @app.route('/hosts/<host_id>')
 def host_listing(host_id):
