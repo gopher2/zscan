@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def view_home():
-    return render_template("index.html")
+    return render_template("base.html")
     
 @app.route('/hosts')
 def all_host_listing():

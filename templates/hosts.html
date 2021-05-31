@@ -1,24 +1,24 @@
-<!doctype html>
-<html lang="en">
-  <body>
-      <table>
-        <thead>
-          <td>Network</td>
-          <td>IP Address</td>
-          <td>Hostname</td>
-          <td>Last Scan Date</td>
-          <td>Open Ports</td>
-        </thead>
-        {% for row in host_data %}
-        <tr> 
-          <td>{{row["Network"]}}</td>
-          <td><a href="/hosts/{{row['host_id']}}">{{row["IP_Address"]}}</a></td>
-          <td>{{row["hostname"]}}</td>
-          <td>{{row["starttime"]}}</td>
-          <td>{{row["openports"]}}</td>	
-        </tr>
-        {% endfor %}
-      </table>
-      </div>
-  </body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %} 
+
+<table>
+  <thead>
+    <td>Network</td>
+    <td>IP Address</td>
+    <td>Hostname</td>
+    <td>Last Scan Date</td>
+    <td>Open Ports</td>
+  </thead>
+  {% for row in host_data %}
+  <tr> 
+    <td>{{row["Network"]}}</td>
+    <td><a href="/hosts/{{row['host_id']}}">{{row["IP_Address"]}}</a></td>
+    <td>{{row["hostname"]}}</td>
+    <td>{{row["starttime"]}}</td>
+    <td>{{row["openports"]}}</td>	
+  </tr>
+  {% endfor %}
+</table>
+
+{% endblock %}
