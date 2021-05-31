@@ -2,7 +2,8 @@
 
 {% block content %} 
 
-<table>
+<table class="table table-hover">
+  <caption>List of all detected hosts</caption>
   <thead>
     <td>Network</td>
     <td>IP Address</td>
@@ -11,9 +12,9 @@
     <td>Open Ports</td>
   </thead>
   {% for row in host_data %}
-  <tr> 
+  <tr class='clickable-row' data-href="/hosts/{{row['host_id']}}" method = POST>
     <td>{{row["Network"]}}</td>
-    <td><a href="/hosts/{{row['host_id']}}">{{row["IP_Address"]}}</a></td>
+    <td>{{row["IP_Address"]}}</a></td>
     <td>{{row["hostname"]}}</td>
     <td>{{row["starttime"]}}</td>
     <td>{{row["openports"]}}</td>	

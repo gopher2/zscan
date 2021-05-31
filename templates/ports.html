@@ -2,14 +2,15 @@
 
 {% block content %} 
 
-<table>
+<table class="table table-hover">
+  <caption>Global Port Listing</caption>
   <thead>
     <td>Description</td>
     <td>Port Number</td>
     <td>Scan on Default</td>
   </thead>
   {% for row in port_data %}
-  <tr> 
+  <tr class='clickable-row' data-href="/port/{{row['port_number']}}" method = POST>
     <td>{{row["port_description"]}}</td>
     <td>{{row["port_number"]}}</td>
     <td>{{row["scan_enabled"]}}</td>

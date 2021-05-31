@@ -23,7 +23,8 @@ def all_host_listing():
 @app.route('/hosts/<host_id>')
 def host_listing(host_id):
         host_data = query_single_host_data(host_id)
-        return render_template('hostdetail.html', host_data=host_data)
+        host_info = query_host_info(host_id)
+        return render_template('hostdetail.html', host_data=host_data, host_info=host_info)
 
 @app.route('/networks')
 def network_listing():
@@ -33,7 +34,8 @@ def network_listing():
 @app.route('/networks/<network_id>')
 def network_detail(network_id):
         network_data = query_network(network_id)
-        return render_template('networkdetail.html', network_data=network_data)
+        network_info = query_network_info(network_id)
+        return render_template('networkdetail.html', network_data=network_data, network_info=network_info)
 
 @app.route('/ports')
 def port_listing():
@@ -54,6 +56,35 @@ def query_all_ports():
     c.execute(sql)
     rows = c.fetchall()
     return rows
+
+def query_network_info(network_id):
+
+    conn = sqlite3.connect("zscan.db")
+    conn.row_factory = sqlite3.Row
+    sql = '''   SELECT
+                    description, cidr
+                FROM 
+                    Networks
+                WHERE
+                    network_id = ? '''
+    c = conn.cursor()
+    c.execute(sql, (network_id,))
+    row = c.fetchone()
+    return row
+
+def query_host_info(host_id):
+    conn = sqlite3.connect("zscan.db")
+    conn.row_factory = sqlite3.Row
+    sql = '''   SELECT
+                    IP_Address, hostname
+                FROM 
+                    Hosts
+                WHERE
+                    host_id = ? '''
+    c = conn.cursor()
+    c.execute(sql, (host_id,))
+    row = c.fetchone()
+    return row
 
 def query_network(network_id):
     conn = sqlite3.connect("zscan.db")
@@ -103,7 +134,9 @@ def query_single_host_data(host_id):
                     INNER JOIN Hosts    ON OpenPorts.host_id = Hosts.host_id
                     INNER JOIN Scans    ON OpenPorts.scan_id = Scans.scan_id
                 WHERE
-                    OpenPorts.host_id = ? '''
+                    OpenPorts.host_id = ? 
+                GROUP BY
+                    port '''
     
     c = conn.cursor()
     c.execute(sql, (host_id,))

@@ -1,18 +1,20 @@
-<!doctype html>
-<html lang="en">
-  <body>
-      <table>
-        <thead>
-          <td>Port</td>
-          <td>Scan Enabled</td>
-        </thead>
-        {% for row in network_data %}
-        <tr> 
-          <td>{{row["port_number"]}}</td>
-          <td>{{row["enabled"]}}</td>
-        </tr>
-        {% endfor %}
-      </table>
-      </div>
-  </body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %} 
+<h1>{{ network_info.0  }} - {{ network_info.1  }}</h1>
+<table class="table table-hover">
+  <thead>
+    <td>Port</td>
+    <td>Scan Enabled</td>
+  </thead>
+  {% for row in network_data %}
+  <tr> 
+    <td>{{row["port_number"]}}</td>
+    <td>{{row["enabled"]}}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+  
+
+{% endblock %}

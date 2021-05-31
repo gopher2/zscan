@@ -1,21 +1,20 @@
-<!doctype html>
-<html lang="en">
-  <body>
-      <table style="width:100%" >
-        <thead>
-          <td>Host</td>
-          <td>Service</td>
-          <td>Port</td>
-          <td>Time</td>
-        </thead>
-        {% for row in host_data %}
-        <tr> 
-          <td>{{row["ip_address"]}}</td>
-          <td>{{row["service"]}}</td>
-          <td>{{row["port"]}}</td>
-          <td>{{row["scantime"]}}</td>
-        </tr>
-        {% endfor %}
-      </table>
-  </body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %} 
+<h1>Open Ports on {{ host_info.0 }}{%- if host_info.1 != ' ' -%} - {{ host_info.1 }}{% endif %}
+</h1>
+
+<table class="table table-hover">
+  <thead>
+    <td>Open Port</td>
+    <td>Last Seen</td>
+  </thead>
+  {% for row in host_data %}
+  <tr> 
+    <td>{{row["service"]}} / {{row["port"]}}</td>
+    <td>{{row["scantime"]}}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+{% endblock %}
