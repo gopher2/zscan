@@ -65,6 +65,7 @@ share/python-wheels/
 *.spec
 .spyderproject
 .spyproject
+*.sqppro
 target/
 .tox/
 var/
