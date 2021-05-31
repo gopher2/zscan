@@ -3,6 +3,10 @@ import sqlite3
 
 app = Flask(__name__)
 
+@app.route("/")
+def view_home():
+    return render_template("index.html")
+    
 @app.route('/hosts')
 def all_host_listing():
         host_data = query_all_host_data()
@@ -23,7 +27,25 @@ def network_detail(network_id):
         network_data = query_network(network_id)
         return render_template('networkdetail.html', network_data=network_data)
 
+@app.route('/ports')
+def port_listing():
+        port_data = query_all_ports()
+        return render_template('ports.html', port_data=port_data)
 
+def query_all_ports():
+    conn = sqlite3.connect("zscan.db")
+    conn.row_factory = sqlite3.Row
+    sql = '''   SELECT
+                    port_number,
+                    port_description,
+                    scan_enabled
+                FROM
+                    Port
+                '''   
+    c = conn.cursor()
+    c.execute(sql)
+    rows = c.fetchall()
+    return rows
 
 def query_network(network_id):
     conn = sqlite3.connect("zscan.db")

@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <body>
+      <table>
+        <thead>
+          <td>Description</td>
+          <td>Port Number</td>
+          <td>Scan on Default</td>
+        </thead>
+        {% for row in port_data %}
+        <tr> 
+          <td>{{row["port_description"]}}</td>
+          <td>{{row["port_number"]}}</td>
+          <td>{{row["scan_enabled"]}}</td>
+        </tr>
+        {% endfor %}
+      </table>
+      </div>
+  </body>
+</html>
